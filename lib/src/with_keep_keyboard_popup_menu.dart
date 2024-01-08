@@ -138,15 +138,11 @@ class WithKeepKeyboardPopupMenuState extends State<WithKeepKeyboardPopupMenu> {
       child: widget.childBuilder(context, openPopupMenu),
     );
     if (kIsWeb || !Platform.isIOS) {
-      return WillPopScope(
-        onWillPop: () async {
-          if (popupState == PopupMenuState.OPENED ||
-              popupState == PopupMenuState.OPENING) {
-            closePopupMenu();
-            return false;
-          } else {
-            return true;
-          }
+      return PopScope(
+        canPop: popupState == PopupMenuState.CLOSED ||
+            popupState == PopupMenuState.CLOSING,
+        onPopInvoked: (bool didPop) {
+          if (!didPop) closePopupMenu();
         },
         child: mainView,
       );
@@ -244,8 +240,7 @@ class WithKeepKeyboardPopupMenuState extends State<WithKeepKeyboardPopupMenu> {
         );
       });
 
-      final overlay = Overlay.of(context)!;
-      overlay.insert(_entry!);
+      Overlay.of(context).insert(_entry!);
 
       await openMenuCompleter.future;
       popupState = PopupMenuState.OPENED;
