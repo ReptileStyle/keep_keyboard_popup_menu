@@ -90,12 +90,16 @@ class WithKeepKeyboardPopupMenu extends StatefulWidget {
   /// [_defaultBackgroundBuilder]
   final PopupMenuBackgroundBuilder backgroundBuilder;
 
+  /// applied after [calculatePopupPosition]
+  final Offset offset;
+
   WithKeepKeyboardPopupMenu({
     required this.childBuilder,
     this.menuBuilder,
     this.menuItemBuilder,
     this.calculatePopupPosition = _defaultCalculatePopupPosition,
     this.backgroundBuilder = _defaultBackgroundBuilder,
+    this.offset = const Offset(0, 0),
     Key? key,
   })  : assert((menuBuilder == null) != (menuItemBuilder == null),
             'You can only pass one of [menuBuilder] and [menuItemBuilder].'),
@@ -187,11 +191,14 @@ class WithKeepKeyboardPopupMenuState extends State<WithKeepKeyboardPopupMenu> {
     if (widget.menuBuilder != null) {
       return widget.menuBuilder!(context, closePopupMenu);
     } else {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: _kMenuVerticalPadding),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: widget.menuItemBuilder!(context, closePopupMenu),
+      return Material(
+        color: Theme.of(context).popupMenuTheme.color,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: _kMenuVerticalPadding),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: widget.menuItemBuilder!(context, closePopupMenu),
+          ),
         ),
       );
     }
@@ -218,7 +225,10 @@ class WithKeepKeyboardPopupMenuState extends State<WithKeepKeyboardPopupMenu> {
               delegate: PopupMenuRouteLayout(
                 buttonRect: childRect,
                 overlayRect: _getOverlayRect(context),
-                calculatePopupPosition: widget.calculatePopupPosition,
+                calculatePopupPosition: (size, r1, r2) {
+                  final calculated  = widget.calculatePopupPosition(size,r1,r2);
+                  return Offset(calculated.dx + widget.offset.dx,calculated.dy + widget.offset.dy);
+                },
               ),
               child: AnimatedPopupMenu(
                 key: _menuKey,
@@ -227,17 +237,17 @@ class WithKeepKeyboardPopupMenuState extends State<WithKeepKeyboardPopupMenu> {
                   openMenuCompleter.complete();
                 },
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    minWidth: _kMenuMinWidth,
-                    maxWidth: _kMenuMaxWidth,
-                  ),
-                  child: SingleChildScrollView(
-                    child: IntrinsicWidth(
-                      stepWidth: _kMenuWidthStep,
-                      child: _buildPopupBody(),
+                    constraints: const BoxConstraints(
+                      minWidth: _kMenuMinWidth,
+                      maxWidth: _kMenuMaxWidth,
+                    ),
+                    child: SingleChildScrollView(
+                      child: IntrinsicWidth(
+                        stepWidth: _kMenuWidthStep,
+                        child: _buildPopupBody(),
+                      ),
                     ),
                   ),
-                ),
               ),
             ),
           ],

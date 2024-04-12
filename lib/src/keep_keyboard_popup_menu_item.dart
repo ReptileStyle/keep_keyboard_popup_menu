@@ -60,6 +60,7 @@ class KeepKeyboardPopupMenuItem extends StatelessWidget {
           onTap: onTap,
           canRequestFocus: onTap != null,
           child: item,
+          splashColor: Theme.of(context).colorScheme.primary,
         ),
       ),
     );
